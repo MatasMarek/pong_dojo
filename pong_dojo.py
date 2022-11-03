@@ -1,5 +1,6 @@
 import pygame
 pygame.init()
+import random
 
 WIDTH, HEIGHT = 700, 500
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -10,6 +11,13 @@ FPS = 60
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+
+SCORE_FONT = pygame.font.SysFont("comicsans", 50)
+SASS_FONT = pygame.font.SysFont("comicsans", 20)
+WINNING_SCORE = 10
+
+stery_file = open('stery.txt', "r")
+LIST_OF_STERY_LINES = stery_file.readlines()
 
 
 class Paddle:
@@ -56,10 +64,21 @@ class Ball:
         pygame.draw.circle(win, self.COLOR, (self.x, self.y), self.radius)
 
 
-def draw(win, paddles, ball):
+def draw(win, paddles, ball, left_score, right_score):
     win.fill(BLACK)
+    left_score_text = SCORE_FONT.render(f"{left_score}", 1, WHITE)
+    right_score_text = SCORE_FONT.render(f"{right_score}", 1, WHITE)
+    win.blit(left_score_text, (WIDTH//4 - left_score_text.get_width()//2, 20))
+    win.blit(right_score_text, (WIDTH * 3//4 - right_score_text.get_width()//2, 20))
+
     for paddle in paddles:
         paddle.draw(win)
+
+    for i in range(10, HEIGHT, HEIGHT//20):
+        if i % 2 == 1:
+            continue
+        pygame.draw.rect(win, WHITE, (WIDTH//2 - 5, i, 10, HEIGHT//20))
+
     ball.draw(win)
     pygame.display.update()
 
@@ -103,9 +122,22 @@ def handle_collision(ball, left_paddle, right_paddle):
                 ball.y_vel = relative_distance * ball.MAX_VEL
 
 
-def ball_check(ball, right_paddle, left_paddle):
+def write_something_sassy():
+
+    idx_of_stera = random.randint(0, len(LIST_OF_STERY_LINES) - 1)
+    sassy_text = LIST_OF_STERY_LINES[idx_of_stera][:-1]
+
+    text = SASS_FONT.render(sassy_text, 1, WHITE)
+    WIN.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
+
+    pygame.display.update()
+    pygame.time.delay(4000)
+
+
+def goal_check(ball, right_paddle, left_paddle, left_score, right_score):
 
     if ball.x - ball.radius > right_paddle.x + right_paddle.width and ball.x_vel > 0:
+        write_something_sassy()
         right_paddle.x = WIDTH - 10 - PADDLE_WIDTH
         right_paddle.y = HEIGHT//2 - PADDLE_HEIGHT//2
         left_paddle.x = 10
@@ -115,9 +147,10 @@ def ball_check(ball, right_paddle, left_paddle):
         ball.y = HEIGHT//2
         ball.y_vel = 0
         ball.x_vel *= -1
-
+        left_score += 1
 
     elif ball.x + ball.radius < left_paddle.x and ball.x_vel < 0:
+        write_something_sassy()
         right_paddle.x = WIDTH - 10 - PADDLE_WIDTH
         right_paddle.y = HEIGHT // 2 - PADDLE_HEIGHT // 2
         left_paddle.x = 10
@@ -127,6 +160,9 @@ def ball_check(ball, right_paddle, left_paddle):
         ball.y = HEIGHT // 2
         ball.y_vel = 0
         ball.x_vel *= -1
+        right_score += 1
+
+    return left_score, right_score
 
 
 def main():
@@ -137,6 +173,9 @@ def main():
 
     ball = Ball(WIDTH//2, HEIGHT//2, BALL_RADIUS)
 
+    left_score = 0
+    right_score = 0
+
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
@@ -144,12 +183,27 @@ def main():
                 run = False
                 break
 
-        draw(WIN, [left_paddle, right_paddle], ball)
+        draw(WIN, [left_paddle, right_paddle], ball, left_score, right_score)
         keys = pygame.key.get_pressed()
         handle_paddle_movement(keys, left_paddle, right_paddle)
         ball.move()
         handle_collision(ball, left_paddle, right_paddle)
-        ball_check(ball, right_paddle, left_paddle)
+        left_score, right_score = goal_check(ball, right_paddle, left_paddle, left_score, right_score)
+
+        won = False
+        if left_score >= WINNING_SCORE:
+            won = True
+            win_text = "Left Player Won!"
+        elif right_score >= WINNING_SCORE:
+            won = True
+            win_text = "Right Player Won!"
+
+        if won:
+            text = SCORE_FONT.render(win_text, 1, WHITE)
+            WIN.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2 - text.get_height()//2))
+            pygame.display.update()
+            pygame.time.delay(5000)
+            left_score, right_score = 0, 0
 
     return
 
@@ -159,3 +213,18 @@ if __name__ == '__main__':
 
 
 # BUG: ball can get stuck on the bottom edge of the screen, probably top too
+
+
+"""
+Blueprint pro paddle logic, zaroven pristup ke vsem globalnim promennym.
+
+def robot_move_paddle(ball, left_paddle, right_paddle, whoami):
+    :param ball: 
+    :param left_paddle: 
+    :param right_paddle: 
+    :param whoami: string "left" or "right"
+    :return: move, up
+    move - Boolean, if paddle moves
+    up - Boolean if paddle moves up
+    return 
+"""
