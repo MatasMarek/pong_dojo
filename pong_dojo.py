@@ -79,7 +79,7 @@ def handle_collision(ball, left_paddle, right_paddle):
 
     if ball.x_vel < 0:
         if ball.y >= left_paddle.y and ball.y <= left_paddle.y + left_paddle.height:
-            if ball.x - ball.radius <= left_paddle.x + left_paddle.width:
+            if ball.x - ball.radius + ball.x_vel <= left_paddle.x + left_paddle.width:
                 ball.x_vel *= -1
 
                 middle_y = left_paddle.y + left_paddle.height/2
@@ -89,13 +89,41 @@ def handle_collision(ball, left_paddle, right_paddle):
 
     else:
         if ball.y >= right_paddle.y and ball.y <= right_paddle.y + right_paddle.height:
-            if ball.x + ball.radius >= right_paddle.x:
+            if ball.x + ball.radius + ball.x_vel >= right_paddle.x:
                 ball.x_vel *= -1
 
                 middle_y = right_paddle.y + right_paddle.height/2
                 difference_in_y = ball.y - middle_y
                 relative_distance = difference_in_y / (right_paddle.height/2)
                 ball.y_vel = relative_distance * ball.MAX_VEL
+
+
+def ball_check(ball, right_paddle, left_paddle):
+
+    if ball.x - ball.radius > right_paddle.x + right_paddle.width and ball.x_vel > 0:
+        right_paddle.x = WIDTH - 10 - PADDLE_WIDTH
+        right_paddle.y = HEIGHT//2 - PADDLE_HEIGHT//2
+        left_paddle.x = 10
+        left_paddle.y = HEIGHT // 2 - PADDLE_HEIGHT // 2
+
+        ball.x = WIDTH//2
+        ball.y = HEIGHT//2
+        ball.y_vel = 0
+        ball.x_vel *= -1
+
+
+    elif ball.x + ball.radius < left_paddle.x and ball.x_vel < 0:
+        right_paddle.x = WIDTH - 10 - PADDLE_WIDTH
+        right_paddle.y = HEIGHT // 2 - PADDLE_HEIGHT // 2
+        left_paddle.x = 10
+        left_paddle.y = HEIGHT//2 - PADDLE_HEIGHT//2
+
+        ball.x = WIDTH // 2
+        ball.y = HEIGHT // 2
+        ball.y_vel = 0
+        ball.x_vel *= -1
+
+
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -111,20 +139,21 @@ def main():
                 run = False
                 break
 
-        ball.move()
-        handle_collision(ball, left_paddle, right_paddle)
-
+        draw(WIN, [left_paddle, right_paddle], ball)
         keys = pygame.key.get_pressed()
         handle_paddle_movement(keys, left_paddle, right_paddle)
+        ball.move()
+        handle_collision(ball, left_paddle, right_paddle)
+        ball_check(ball, right_paddle, left_paddle)
 
-        draw(WIN, [left_paddle, right_paddle], ball)
     return
 
 
 if __name__ == '__main__':
     main()
 
-# TODO: Bug, ball can enter the paddle. We first move the ball, then invert speed, then draw.
-# TODO: Bug, if paddle is 3px below the screen edge, it does not move all the way to the edge.
-# TODO: Game reset: Ball in the middle, moving towards the losing player, reset paddle location.
+# TODO: Bug, ball can enter the paddle. We first move the ball, then invert speed, then draw. ## fixed, line 82, line 92
+# TODO: Bug, if paddle is 3px below the screen edge, it does not move all the way to the edge. ## PROPOSAL - in handle_paddle_movement remove paddle_vel parameter? causes opposite problem? If statement better solution?
+# TODO: Game reset: Ball in the middle, moving towards the losing player, reset paddle location. ## done, line 101 - 128
 
+# BUG: ball can get stuck on the bottom edge of the screen, probably top too
