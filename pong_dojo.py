@@ -27,10 +27,15 @@ class Paddle:
 
     def move(self, up=True):
         if up:
-            self.y -= self.VEL
+            if self.y - self.VEL > 0:
+                self.y -= self.VEL
+            else:
+                self.y = 0
         else:
-            self.y += self.VEL
-
+            if self.y + PADDLE_HEIGHT + self.VEL < HEIGHT:
+                self.y += self.VEL
+            else:
+                self.y = HEIGHT - PADDLE_HEIGHT
 
 class Ball:
     MAX_VEL = 5
@@ -60,14 +65,14 @@ def draw(win, paddles, ball):
 
 
 def handle_paddle_movement(keys, left_paddle, right_paddle):
-    if keys[pygame.K_w] and left_paddle.y - left_paddle.VEL >= 0:
+    if keys[pygame.K_w]:
         left_paddle.move(up=True)
-    if keys[pygame.K_s] and left_paddle.y + left_paddle.VEL + left_paddle.height <= HEIGHT:
+    if keys[pygame.K_s]:
         left_paddle.move(up=False)
 
-    if keys[pygame.K_UP] and right_paddle.y - right_paddle.VEL >= 0:
+    if keys[pygame.K_UP]:
         right_paddle.move(up=True)
-    if keys[pygame.K_DOWN] and right_paddle.y + right_paddle.VEL + right_paddle.height <= HEIGHT:
+    if keys[pygame.K_DOWN]:
         right_paddle.move(up=False)
 
 
@@ -152,8 +157,5 @@ def main():
 if __name__ == '__main__':
     main()
 
-# TODO: Bug, ball can enter the paddle. We first move the ball, then invert speed, then draw. ## fixed, line 82, line 92
-# TODO: Bug, if paddle is 3px below the screen edge, it does not move all the way to the edge. ## PROPOSAL - in handle_paddle_movement remove paddle_vel parameter? causes opposite problem? If statement better solution?
-# TODO: Game reset: Ball in the middle, moving towards the losing player, reset paddle location. ## done, line 101 - 128
 
 # BUG: ball can get stuck on the bottom edge of the screen, probably top too
