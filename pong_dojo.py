@@ -213,7 +213,10 @@ if __name__ == '__main__':
 
 
 # BUG: ball can get stuck on the bottom edge of the screen, probably top too
-
+# TODO: How to distribute paddle logic so that it can play but the code is not readable
+# TODO: How can bots control key presses.
+# TODO HW: Sassy text overfloats, break lines and put balck background below
+# TODO: Start coding initial bots
 
 """
 Blueprint pro paddle logic, zaroven pristup ke vsem globalnim promennym.
