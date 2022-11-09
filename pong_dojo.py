@@ -1,20 +1,14 @@
 import pygame
 import random
+from config import *
+from paddle_logic import RobotMovePaddleMara
+import pygame.locals
+
 pygame.init()
 
-WIDTH, HEIGHT = 700, 500
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-
-PADDLE_WIDTH, PADDLE_HEIGHT = 20, 100
-BALL_RADIUS = 7
-FPS = 60
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-
 SCORE_FONT = pygame.font.SysFont("comicsans", 50)
 SASS_FONT = pygame.font.SysFont("comicsans", 20)
-WINNING_SCORE = 5
 
 stery_file = open('stery.txt', "r", encoding="utf-8")
 LIST_OF_STERY_LINES = stery_file.readlines()
@@ -84,16 +78,17 @@ def draw(win, paddles, ball, left_score, right_score):
     pygame.display.update()
 
 
-def handle_paddle_movement(keys, left_paddle, right_paddle):
-    if keys[pygame.K_w]:
-        left_paddle.move(up=True)
-    if keys[pygame.K_s]:
-        left_paddle.move(up=False)
+def handle_paddle_movement(current_events, left_paddle, right_paddle, events):
+    for event in current_events:
+        if event == events['w']:
+            left_paddle.move(up=True)
+        if event == events['s']:
+            left_paddle.move(up=False)
 
-    if keys[pygame.K_UP]:
-        right_paddle.move(up=True)
-    if keys[pygame.K_DOWN]:
-        right_paddle.move(up=False)
+        if event == events['up']:
+            right_paddle.move(up=True)
+        if event == events['down']:
+            right_paddle.move(up=False)
 
 
 def handle_collision(ball, left_paddle, right_paddle):
@@ -189,7 +184,20 @@ def main():
     left_paddle = Paddle(10, HEIGHT//2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE)
     right_paddle = Paddle(WIDTH - 10 - PADDLE_WIDTH, HEIGHT//2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT, WHITE)
 
+    event_w = pygame.event.Event(pygame.locals.KEYDOWN, unicode="w", key=pygame.locals.K_w,mod=pygame.locals.KMOD_NONE)
+    event_s = pygame.event.Event(pygame.locals.KEYDOWN, unicode="s", key=pygame.locals.K_s,mod=pygame.locals.KMOD_NONE)
+    event_up = pygame.event.Event(pygame.locals.KEYDOWN, unicode="up", key=pygame.locals.K_UP,mod=pygame.locals.KMOD_NONE)
+    event_down = pygame.event.Event(pygame.locals.KEYDOWN, unicode="down", key=pygame.locals.K_DOWN,mod=pygame.locals.KMOD_NONE)
+
+    events = {
+        's': event_s,
+        'w': event_w,
+        'up': event_up,
+        'down': event_down,
+    }
+
     ball = Ball(WIDTH//2, HEIGHT//2, BALL_RADIUS)
+    mara_logic = RobotMovePaddleMara(left=True, events=events)
 
     left_score = 0
     right_score = 0
@@ -202,8 +210,27 @@ def main():
                 break
 
         draw(WIN, [left_paddle, right_paddle], ball, left_score, right_score)
+
+        # Move with Robots
+        mara_logic.make_a_move(ball, left_paddle, right_paddle, pygame)
+
+
         keys = pygame.key.get_pressed()
-        handle_paddle_movement(keys, left_paddle, right_paddle)
+        if keys[pygame.K_w]:
+            newevent = events['w']
+            pygame.event.post(newevent)
+        if keys[pygame.K_s]:
+            newevent = events['s']
+            pygame.event.post(newevent)
+        if keys[pygame.K_UP]:
+            newevent = events['up']
+            pygame.event.post(newevent)
+        if keys[pygame.K_DOWN]:
+            newevent = events['down']
+            pygame.event.post(newevent)
+
+        current_events = pygame.event.get()
+        handle_paddle_movement(current_events, left_paddle, right_paddle, events)
         ball.move()
         handle_collision(ball, left_paddle, right_paddle)
         left_score, right_score = goal_check(ball, right_paddle, left_paddle, left_score, right_score)
@@ -233,8 +260,6 @@ if __name__ == '__main__':
 
 # BUG: ball can get stuck on the bottom edge of the screen, probably top too
 # TODO: How to distribute paddle logic so that it can play but the code is not readable
-# TODO: How can bots control key presses.
-# TODO: Start coding initial bots
 
 """
 Blueprint pro paddle logic, zaroven pristup ke vsem globalnim promennym.
