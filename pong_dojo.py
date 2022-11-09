@@ -231,16 +231,3 @@ if __name__ == '__main__':
 # BUG: ball can get stuck on the bottom edge of the screen, probably top too
 # TODO: How to distribute paddle logic so that it can play but the code is not readable
 
-"""
-Blueprint pro paddle logic, zaroven pristup ke vsem globalnim promennym.
-
-def robot_move_paddle(ball, left_paddle, right_paddle, whoami):
-    :param ball: 
-    :param left_paddle: 
-    :param right_paddle: 
-    :param whoami: string "left" or "right"
-    :return: move, up
-    move - Boolean, if paddle moves
-    up - Boolean if paddle moves up
-    return 
-"""
