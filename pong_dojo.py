@@ -1,6 +1,6 @@
 import pygame
-pygame.init()
 import random
+pygame.init()
 
 WIDTH, HEIGHT = 700, 500
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -14,9 +14,9 @@ BLACK = (0, 0, 0)
 
 SCORE_FONT = pygame.font.SysFont("comicsans", 50)
 SASS_FONT = pygame.font.SysFont("comicsans", 20)
-WINNING_SCORE = 10
+WINNING_SCORE = 5
 
-stery_file = open('stery.txt', "r")
+stery_file = open('stery.txt', "r", encoding="utf-8")
 LIST_OF_STERY_LINES = stery_file.readlines()
 
 
@@ -44,6 +44,7 @@ class Paddle:
                 self.y += self.VEL
             else:
                 self.y = HEIGHT - PADDLE_HEIGHT
+
 
 class Ball:
     MAX_VEL = 5
@@ -122,13 +123,30 @@ def handle_collision(ball, left_paddle, right_paddle):
                 ball.y_vel = relative_distance * ball.MAX_VEL
 
 
+def text_box(surface, font, x_start, x_end, y_start, text, colour ):
+    x = x_start
+    y = y_start
+    words = text.split(' ')
+
+    for word in words:
+        word_t = font.render(word, True, colour)
+        if word_t.get_width() + x <= x_end:
+            surface.blit(word_t, (x, y))
+            x += word_t.get_width() + 6
+        else:
+            y += word_t.get_height() + 3
+            x = x_start
+            surface.blit(word_t, (x, y))
+            x += word_t.get_width() + 6
+
+
 def write_something_sassy():
 
     idx_of_stera = random.randint(0, len(LIST_OF_STERY_LINES) - 1)
     sassy_text = LIST_OF_STERY_LINES[idx_of_stera][:-1]
 
-    text = SASS_FONT.render(sassy_text, 1, WHITE)
-    WIN.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
+    pygame.draw.rect(WIN, BLACK, (WIDTH // 2 - 5, 0, 10, HEIGHT))
+    text_box(WIN, SASS_FONT, WIDTH * 1/3, WIDTH * 5/7, HEIGHT * 2/5, sassy_text, WHITE)
 
     pygame.display.update()
     pygame.time.delay(4000)
@@ -199,6 +217,7 @@ def main():
             win_text = "Right Player Won!"
 
         if won:
+            WIN.fill(BLACK)
             text = SCORE_FONT.render(win_text, 1, WHITE)
             WIN.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2 - text.get_height()//2))
             pygame.display.update()
@@ -215,7 +234,7 @@ if __name__ == '__main__':
 # BUG: ball can get stuck on the bottom edge of the screen, probably top too
 # TODO: How to distribute paddle logic so that it can play but the code is not readable
 # TODO: How can bots control key presses.
-# TODO HW: Sassy text overfloats, break lines and put balck background below
+# TODO HW: Sassy text overfloats, break lines and put black background below # Done
 # TODO: Start coding initial bots
 
 """
