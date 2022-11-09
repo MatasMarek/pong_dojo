@@ -104,7 +104,7 @@ def handle_collision(ball, left_paddle, right_paddle):
 
     if ball.x_vel < 0:
         if ball.y >= left_paddle.y and ball.y <= left_paddle.y + left_paddle.height:
-            if ball.x - ball.radius + ball.x_vel <= left_paddle.x + left_paddle.width:
+            if ball.x - ball.radius + ball.x_vel <= left_paddle.x + left_paddle.width <= ball.x - ball.radius:
                 ball.x_vel *= -1
 
                 middle_y = left_paddle.y + left_paddle.height/2
@@ -114,7 +114,7 @@ def handle_collision(ball, left_paddle, right_paddle):
 
     else:
         if ball.y >= right_paddle.y and ball.y <= right_paddle.y + right_paddle.height:
-            if ball.x + ball.radius + ball.x_vel >= right_paddle.x:
+            if ball.x + ball.radius + ball.x_vel >= right_paddle.x >= ball.x + ball.radius:
                 ball.x_vel *= -1
 
                 middle_y = right_paddle.y + right_paddle.height/2
@@ -234,7 +234,6 @@ if __name__ == '__main__':
 # BUG: ball can get stuck on the bottom edge of the screen, probably top too
 # TODO: How to distribute paddle logic so that it can play but the code is not readable
 # TODO: How can bots control key presses.
-# TODO HW: Sassy text overfloats, break lines and put black background below # Done
 # TODO: Start coding initial bots
 
 """
