@@ -1,9 +1,8 @@
 import pygame
-import random
 from config import *
 from paddle_logic import RobotMovePaddleMara
 import pygame.locals
-
+from text_handling import write_something_sassy, text_box
 pygame.init()
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -41,7 +40,7 @@ class Paddle:
 
 
 class Ball:
-    MAX_VEL = 5
+    MAX_VEL = 10
     COLOR = WHITE
 
     def __init__(self, x, y, radius):
@@ -118,39 +117,10 @@ def handle_collision(ball, left_paddle, right_paddle):
                 ball.y_vel = relative_distance * ball.MAX_VEL
 
 
-def text_box(surface, font, x_start, x_end, y_start, text, colour ):
-    x = x_start
-    y = y_start
-    words = text.split(' ')
-
-    for word in words:
-        word_t = font.render(word, True, colour)
-        if word_t.get_width() + x <= x_end:
-            surface.blit(word_t, (x, y))
-            x += word_t.get_width() + 6
-        else:
-            y += word_t.get_height() + 3
-            x = x_start
-            surface.blit(word_t, (x, y))
-            x += word_t.get_width() + 6
-
-
-def write_something_sassy():
-
-    idx_of_stera = random.randint(0, len(LIST_OF_STERY_LINES) - 1)
-    sassy_text = LIST_OF_STERY_LINES[idx_of_stera][:-1]
-
-    pygame.draw.rect(WIN, BLACK, (WIDTH // 2 - 5, 0, 10, HEIGHT))
-    text_box(WIN, SASS_FONT, WIDTH * 1/3, WIDTH * 5/7, HEIGHT * 2/5, sassy_text, WHITE)
-
-    pygame.display.update()
-    pygame.time.delay(4000)
-
-
 def goal_check(ball, right_paddle, left_paddle, left_score, right_score):
 
     if ball.x - ball.radius > right_paddle.x + right_paddle.width and ball.x_vel > 0:
-        write_something_sassy()
+        write_something_sassy(pygame, LIST_OF_STERY_LINES, SASS_FONT, WIN)
         right_paddle.x = WIDTH - 10 - PADDLE_WIDTH
         right_paddle.y = HEIGHT//2 - PADDLE_HEIGHT//2
         left_paddle.x = 10
@@ -163,7 +133,7 @@ def goal_check(ball, right_paddle, left_paddle, left_score, right_score):
         left_score += 1
 
     elif ball.x + ball.radius < left_paddle.x and ball.x_vel < 0:
-        write_something_sassy()
+        write_something_sassy(pygame, LIST_OF_STERY_LINES, SASS_FONT, WIN)
         right_paddle.x = WIDTH - 10 - PADDLE_WIDTH
         right_paddle.y = HEIGHT // 2 - PADDLE_HEIGHT // 2
         left_paddle.x = 10
