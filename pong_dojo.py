@@ -1,8 +1,9 @@
 import pygame
 from config import *
-from paddle_logic import RobotMovePaddleMara
+from bot_template import RobotMovePaddleMara
+from paddle_logic import RobotMovePaddle
 import pygame.locals
-from text_handling import write_something_sassy, text_box
+from text_handling import write_something_sassy
 pygame.init()
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -91,7 +92,7 @@ def handle_paddle_movement(current_events, left_paddle, right_paddle, events):
 
 
 def handle_collision(ball, left_paddle, right_paddle):
-    if ball.y - ball.radius <= 0:
+    if ball.y - ball.radius <= 0:       # bug with stuck ball
         ball.y_vel *= -1
     elif ball.y + ball.radius >= HEIGHT:
         ball.y_vel *= -1
@@ -168,7 +169,7 @@ def main():
 
     ball = Ball(WIDTH//2, HEIGHT//2, BALL_RADIUS)
     mara_logic = RobotMovePaddleMara(left=True, events=events)
-
+    paddle_logic = RobotMovePaddle(right=True, events=events)
     left_score = 0
     right_score = 0
 
@@ -183,7 +184,7 @@ def main():
 
         # Move with Robots
         mara_logic.make_a_move(ball, left_paddle, right_paddle, pygame)
-
+        paddle_logic.make_a_move(ball, left_paddle, right_paddle, pygame)
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
@@ -228,6 +229,6 @@ if __name__ == '__main__':
     main()
 
 
-# BUG: ball can get stuck on the bottom edge of the screen, probably top too
+# BUG: ball can get stuck on the bottom edge of the screen, probably top too --- line 95 - 98 ??
 # TODO: How to distribute paddle logic so that it can play but the code is not readable
 
