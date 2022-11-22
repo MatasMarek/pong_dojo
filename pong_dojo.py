@@ -42,6 +42,8 @@ class Paddle:
 class Ball:
     MAX_VEL = 10
     COLOR = WHITE
+    AIR_DRAG = 2
+    no_of_updates = WIDTH//MAX_VEL
 
     def __init__(self, x, y, radius):
         self.x = x
@@ -49,10 +51,17 @@ class Ball:
         self.radius = radius
         self.x_vel = self.MAX_VEL
         self.y_vel = 0
+        self.y_vel_from_rotation = 0.
+        self.rotation = 0  # Every hit can increase by one
 
     def move(self):
         self.x += self.x_vel
         self.y += self.y_vel
+        sign_of_rotation = self.y_vel_from_rotation/abs(self.y_vel_from_rotation)
+        self.y_vel_from_rotation += float(self.AIR_DRAG*self.rotation)/self.no_of_updates * self.x_vel/abs(self.x_vel)
+        if abs(self.y_vel_from_rotation) > 1.:
+            self.y_vel += 1 * int(sign_of_rotation)
+            self.y_vel_from_rotation += -sign_of_rotation
 
     def draw(self, win):
         pygame.draw.circle(win, self.COLOR, (self.x, self.y), self.radius)
@@ -89,8 +98,21 @@ def handle_paddle_movement(current_events, left_paddle, right_paddle, events):
         if event == events['down']:
             right_paddle.move(up=False)
 
+def ball_has_collided_with_paddle(ball, current_events, events):
+    for event in current_events:
+        if ball.x_vel < 0:
+            if event == events['w']:
+                ball.rotation += 1
+            if event == events['s']:
+                ball.rotation -= 1
+        else:
+            if event == events['up']:
+                ball.rotation -= 1
+            if event == events['down']:
+                ball.rotation += 1
+        ball.x_vel *= -1
 
-def handle_collision(ball, left_paddle, right_paddle):
+def handle_collision(ball, left_paddle, right_paddle, current_events, events):
     if ball.y - ball.radius <= 0:
         ball.y_vel *= -1
     elif ball.y + ball.radius >= HEIGHT:
@@ -99,8 +121,7 @@ def handle_collision(ball, left_paddle, right_paddle):
     if ball.x_vel < 0:
         if ball.y >= left_paddle.y and ball.y <= left_paddle.y + left_paddle.height:
             if ball.x - ball.radius + ball.x_vel <= left_paddle.x + left_paddle.width <= ball.x - ball.radius:
-                ball.x_vel *= -1
-
+                ball_has_collided_with_paddle(ball, current_events, events)
                 middle_y = left_paddle.y + left_paddle.height/2
                 difference_in_y = ball.y - middle_y
                 relative_distance = difference_in_y / (left_paddle.height/2)
@@ -109,8 +130,7 @@ def handle_collision(ball, left_paddle, right_paddle):
     else:
         if ball.y >= right_paddle.y and ball.y <= right_paddle.y + right_paddle.height:
             if ball.x + ball.radius + ball.x_vel >= right_paddle.x >= ball.x + ball.radius:
-                ball.x_vel *= -1
-
+                ball_has_collided_with_paddle(ball, current_events, events)
                 middle_y = right_paddle.y + right_paddle.height/2
                 difference_in_y = ball.y - middle_y
                 relative_distance = difference_in_y / (right_paddle.height/2)
@@ -131,6 +151,7 @@ def goal_check(ball, right_paddle, left_paddle, left_score, right_score):
         ball.y_vel = 0
         ball.x_vel *= -1
         left_score += 1
+        ball.rotation = 0
 
     elif ball.x + ball.radius < left_paddle.x and ball.x_vel < 0:
         write_something_sassy(pygame, LIST_OF_STERY_LINES, SASS_FONT, WIN)
@@ -144,6 +165,7 @@ def goal_check(ball, right_paddle, left_paddle, left_score, right_score):
         ball.y_vel = 0
         ball.x_vel *= -1
         right_score += 1
+        ball.rotation = 0
 
     return left_score, right_score
 
@@ -202,7 +224,7 @@ def main():
         current_events = pygame.event.get()
         handle_paddle_movement(current_events, left_paddle, right_paddle, events)
         ball.move()
-        handle_collision(ball, left_paddle, right_paddle)
+        handle_collision(ball, left_paddle, right_paddle, current_events, events)
         left_score, right_score = goal_check(ball, right_paddle, left_paddle, left_score, right_score)
 
         won = False
