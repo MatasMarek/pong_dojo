@@ -15,7 +15,7 @@ LIST_OF_STERY_LINES = stery_file.readlines()
 
 
 class Paddle:
-    VEL = 4
+    VEL = 2
 
     def __init__(self, x, y, width, height, color):
         self.color = color
@@ -41,7 +41,7 @@ class Paddle:
 
 
 class Ball:
-    MAX_VEL = 10
+    MAX_VEL = 5
     COLOR = WHITE
     AIR_DRAG = 2
     no_of_updates = WIDTH//MAX_VEL
@@ -58,11 +58,15 @@ class Ball:
     def move(self):
         self.x += self.x_vel
         self.y += self.y_vel
-        sign_of_rotation = self.y_vel_from_rotation/abs(self.y_vel_from_rotation)
-        self.y_vel_from_rotation += float(self.AIR_DRAG*self.rotation)/self.no_of_updates * self.x_vel/abs(self.x_vel)
-        if abs(self.y_vel_from_rotation) > 1.:
-            self.y_vel += 1 * int(sign_of_rotation)
-            self.y_vel_from_rotation += -sign_of_rotation
+        if self.rotation != 0:
+            sign_of_rotation = self.rotation/abs(self.rotation)
+            self.y_vel_from_rotation += float(self.AIR_DRAG*self.rotation)/self.no_of_updates * self.x_vel/abs(self.x_vel)
+            sign_of_y_vel_from_rotation = self.y_vel_from_rotation/abs(self.y_vel_from_rotation)
+            if abs(self.y_vel_from_rotation) > 1.:
+                self.y_vel += 1 * int(sign_of_y_vel_from_rotation)
+                self.y_vel_from_rotation += -sign_of_y_vel_from_rotation
+                # print(self.y_vel_from_rotation, -sign_of_rotation)
+
 
     def draw(self, win):
         pygame.draw.circle(win, self.COLOR, (self.x, self.y), self.radius)
@@ -111,7 +115,7 @@ def ball_has_collided_with_paddle(ball, current_events, events):
                 ball.rotation -= 1
             if event == events['down']:
                 ball.rotation += 1
-        ball.x_vel *= -1
+    ball.x_vel *= -1
 
 
 def handle_collision(ball, left_paddle, right_paddle, current_events, events):
@@ -152,7 +156,6 @@ def goal_check(ball, right_paddle, left_paddle, left_score, right_score):
         ball.x = WIDTH//2
         ball.y = HEIGHT//2
         ball.y_vel = 0
-        ball.x_vel *= -1
         left_score += 1
         ball.rotation = 0
 
@@ -166,7 +169,6 @@ def goal_check(ball, right_paddle, left_paddle, left_score, right_score):
         ball.x = WIDTH // 2
         ball.y = HEIGHT // 2
         ball.y_vel = 0
-        ball.x_vel *= -1
         right_score += 1
         ball.rotation = 0
 
