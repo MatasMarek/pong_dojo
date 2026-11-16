@@ -198,6 +198,8 @@ class Arena:
         self.last_shot_t = 0
         self.record_n = 0
         self.mode = None
+        self.particles = []  # effects run on the menu too, before any match exists
+        self.shake = 0.0
         if args.mode:
             self.start(args.mode)
 
