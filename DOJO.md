@@ -1,0 +1,61 @@
+# Pong Dojo — arena 2026
+
+**The game is Marek Matas's.** Pong Dojo was written in autumn 2022 by Marek Matas, with ultra_kevyk and the
+other students of his Python course (github.com/MatasMarek/pong_dojo). Their files in this folder —
+`pong_dojo.py`, `config.py`, `bot_template.py`, `text_handling.py`, `stery.txt` — are left exactly as they were
+at commit `9111df8` (22 Nov 2022). The code carries no licence, so this copy is private.
+
+The course's goal was an **ultimate pong player**: one function, `robot_move_paddle(ball, left_paddle,
+right_paddle, whoami)`, returning two booleans (move or not, up or down), called every tick. Everything in
+`dojo/` and `tests/` was added beside the original in November 2026 to finish that idea.
+
+## What is new
+
+| Part | What it does |
+|---|---|
+| `dojo/engine.py` | The original physics, repeated without pygame, so bots can play headless. |
+| `dojo/contract.py` | The bot contract: read-only copies in, at most one key event out per tick. |
+| `dojo/bots/tygr.py` | **TYGR · the Ultimate** — the attacker: simulates every reachable shot and spin, winds the spin up. |
+| `dojo/bots/drak.py` | **DRAK · the Nemesis** — the reader: same knowledge and limits, reads the opponent's possible shots, hits with the paddle's sweet spot. |
+| `dojo/taunts/*.txt` | Each bot's own taunts. The original `stery.txt` is still used too. |
+| `dojo/arena.py` | The new arena: menu, four modes, match intro, name cards, score pips, skins, trails, sparks, sound, taunt box, final stats. |
+| `dojo/tournament.py` | Headless bot-vs-bot series. |
+| `tests/test_physics_unchanged.py` | Proof that the physics and the player limits are unchanged. |
+
+## Run it
+
+From the folder above this one: `play.cmd` (double-click), or `play.cmd --mode bots`.
+By hand, inside this folder: `python -m dojo.arena` (needs pygame or pygame-ce).
+
+Modes: 1 TYGR vs DRAK · 2 you vs TYGR · 3 you vs DRAK · 4 you vs a friend (W/S against the arrows, as in 2022).
+Keys: P pause · +/- speed in a bot match · M sound · F12 screenshot · Esc menu.
+
+## What stayed the same
+
+Field 700 × 500, paddles 20 × 100 moving 2 px per tick, ball radius 7 at 5 px per tick, the spin rule
+(a key held at the moment of the hit adds spin; spin bends the ball and is reset only by a goal), 60 ticks per
+second, first to 10, the stuck-ball-on-the-wall behaviour. A bot moves exactly as a human does: one key per
+direction per tick.
+
+`python -m unittest -v tests.test_physics_unchanged` runs the original code and the new engine side by side on
+the same key presses (six runs of up to 30,000 ticks; the last test run compared 166,427 ticks with 1,177 paddle
+hits and 294 goals) and fails on the first difference. It also checks that the original files
+are byte-identical to `9111df8`.
+
+One case is handled differently: the original crashes with a ZeroDivisionError if the spin accumulator lands on
+exactly 0.0 (it happened once in 180,000 test ticks). The engine treats that tick as "no spin change" instead.
+
+## Why spin decides everything
+
+A paddle waiting in the middle can reach any landing spot in time: the ball needs about 124 ticks to cross, and
+the paddle covers 248 px in that time. So two perfect defenders rally forever. The only way through is the
+spin rule: spin is never reset during a rally, so it grows hit by hit, the ball starts to bend hard, and at
+high spin it overshoots the wall for one tick. A ball that is beyond the edge on the receiver's hit tick
+cannot be reached by any paddle position. Both bots know this; every point between them is won that way.
+
+## How equal are they
+
+Headless series, `python -m dojo.tournament --matches 20 --seed 1000` (sides swap every match):
+**TYGR 13 – 7 DRAK, points 176 – 148** — DRAK takes 46 % of the points. Matches last 4–6 minutes of game time,
+rallies up to about 20 hits. TYGR against itself splits evenly (9 – 10), so neither side of the field has an
+edge. TYGR keeps a slight lead: it is the Ultimate, DRAK its near-equal.
