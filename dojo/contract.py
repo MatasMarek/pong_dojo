@@ -22,7 +22,7 @@ class BallView:
     y: float
     x_vel: float
     y_vel: float
-    rotation: int
+    rotation: float
     y_vel_from_rotation: float
     radius: int
 
@@ -33,13 +33,14 @@ class PaddleView:
     y: int
     width: int
     height: int
+    vy: float = 0.0  # paddle speed; always 0 under the original rules (no paddle mass there)
 
 
 def views(match):
     b = match.ball
     ball = BallView(b.x, b.y, b.x_vel, b.y_vel, b.rotation, b.y_vel_from_rotation, b.radius)
-    left = PaddleView(match.left.x, match.left.y, match.left.width, match.left.height)
-    right = PaddleView(match.right.x, match.right.y, match.right.width, match.right.height)
+    left = PaddleView(match.left.x, match.left.y, match.left.width, match.left.height, getattr(match.left, 'vy', 0.0))
+    right = PaddleView(match.right.x, match.right.y, match.right.width, match.right.height, getattr(match.right, 'vy', 0.0))
     return ball, left, right
 
 
@@ -57,3 +58,29 @@ def ask_bot(bot, match, whoami):
     answer = bot.robot_move_paddle(ball, left, right, whoami)
     move, up = answer
     return to_events(move, up, whoami)
+
+
+class Handicap:
+    """Skill 1-10 for a created bot. Skill 10 = no handicap (TYGR and DRAK always play at 10).
+    Lower skill = it sees the game a few ticks late and sometimes hesitates. Applied
+    outside the bot, so every brain gets the same treatment."""
+
+    def __init__(self, bot, skill, seed=None):
+        import random
+        self.bot = bot
+        self.skill = max(1, min(10, int(skill)))
+        self.delay = (10 - self.skill) * 2
+        self.freeze = (10 - self.skill) * 0.03
+        self.rng = random.Random(seed)
+        self.history = []
+        self.last = (False, False)
+
+    def robot_move_paddle(self, ball, left, right, whoami):
+        self.history.append((ball, left, right))
+        if len(self.history) > self.delay + 1:
+            self.history.pop(0)
+        if self.rng.random() < self.freeze:
+            return self.last
+        b, l, r = self.history[0]
+        self.last = self.bot.robot_move_paddle(b, l, r, whoami)
+        return self.last

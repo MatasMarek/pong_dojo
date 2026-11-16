@@ -34,5 +34,9 @@ class Tygr(Planner):
         return CENTER
 
 
-def make(seed=None):
+def make(seed=None, rules=None):
+    """Original rules: the 2022 planner. Any other preset: the realistic-engine brain."""
+    if rules is not None and rules.engine != 'original':
+        from dojo.bots.real import RealPlanner
+        return RealPlanner(rules, 'attack', seed)
     return Tygr(seed)

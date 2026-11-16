@@ -22,12 +22,29 @@ right_paddle, whoami)`, returning two booleans (move or not, up or down), called
 | `dojo/tournament.py` | Headless bot-vs-bot series. |
 | `tests/test_physics_unchanged.py` | Proof that the physics and the player limits are unchanged. |
 
+## Added later the same day (G's choices, 16 Nov 12:05)
+
+| Part | What it does |
+|---|---|
+| `dojo/rules.py` | Rule sets. **Originál 2022** stays locked and is the default. **Realistický**, **Arkáda**, **Zpomalený** and **Vlastní** run the realistic engine; the rules screen has 12 sliders. |
+| `dojo/physics2.py` | The realistic engine: paddles with mass (accelerate, top speed, brake), return angle from the contact point, paddle speed passed to the ball, spin from paddle speed that bends the flight and fades, rallies that speed up to a cap, swept collisions (no overshoot, no stuck ball). |
+| `dojo/bots/real.py` | TYGR's and DRAK's brain for the realistic engine (same contract, same limits). |
+| `dojo/players.py`, `dojo/editor.py` | The player creator: name, title, motto, colours, 7 paddle patterns, avatar face, voice, taunt level, own lines, human or bot (TYGR or DRAK style, skill 1-10). Saved in `PONG DOJO/players/`. |
+| `dojo/looks.py` | Paddle skins and the avatar faces, drawn from code. |
+| `dojo/voice.py` | Shouting avatars: Windows' Czech voice (Microsoft Jakub), offline, reshaped per player (growl, echo, robot, pitch); the mouth follows the loudness. Cache in `PONG DOJO/.voice_cache/`. |
+| `dojo/taunts/*_drsne.txt`, `*_brutalni.txt`, `obecne*.txt` | Three taunt levels: slušné, drsné, brutální. The friend's `stery.txt` sits in the drsné and brutální pools. |
+| `tests/test_realistic.py` | Limits under every realistic preset: paddle and ball never exceed their caps, the ball never leaves the field, every preset finishes a bot match. |
+
+Why the realistic presets are tuned the way they are: with a slow ball two perfect bots never miss.
+A rally starts slow and speeds up by `zrychlení za úder` until the ball outruns a paddle — that is when
+points fall. Realistický: start 5, +0.45 per hit, cap 17 px/tick, paddle 4.5 px/tick.
+
 ## Run it
 
 From the folder above this one: `play.cmd` (double-click), or `play.cmd --mode bots`.
 By hand, inside this folder: `python -m dojo.arena` (needs pygame or pygame-ce).
 
-Modes: 1 TYGR vs DRAK · 2 you vs TYGR · 3 you vs DRAK · 4 you vs a friend (W/S against the arrows, as in 2022).
+Menu: 1 TYGR vs DRAK · 2 you vs TYGR · 3 new match (any two players, any rules) · 4 rules · 5 player creator.
 Keys: P pause · +/- speed in a bot match · M sound · F12 screenshot · Esc menu.
 
 ## What stayed the same

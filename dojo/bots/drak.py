@@ -67,5 +67,9 @@ class Drak(Planner):
         return self.idle_y
 
 
-def make(seed=None):
+def make(seed=None, rules=None):
+    """Original rules: the 2022 planner. Any other preset: the realistic-engine brain."""
+    if rules is not None and rules.engine != 'original':
+        from dojo.bots.real import RealPlanner
+        return RealPlanner(rules, 'read', seed)
     return Drak(seed)
