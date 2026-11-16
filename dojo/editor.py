@@ -58,7 +58,7 @@ class Editor:
         R.append(('voice.pitch', 'Hlas: výška', 'pitch'))
         R.append(('voice.effect', 'Hlas: efekt', P.EFFECTS))
         R.append(('level', 'Nadávky', P.LEVELS))
-        R.append(('lines', 'Vlastní hlášky ( | odděluje )', 'lines'))
+        R.append(('lines', 'Vlastní hlášky (odděl znakem |)', 'lines'))
         R.append(('brain', 'Kdo hraje', P.BRAINS))
         R.append(('skill', 'Dovednost bota', 'skill'))
         R.append(('save', '[ Uložit ]', 'button'))
@@ -93,7 +93,7 @@ class Editor:
         if kind == 'pitch':
             return f'{v:.2f}'
         if kind == 'lines':
-            return ' | '.join(self.p.get('lines', [])) or '(žádné - jen balíček nadávek)'
+            return ' | '.join(self.p.get('lines', [])) or '(žádné, jen hlášky z balíčku)'
         if kind == 'skill':
             return f'{v} / 10' + ('' if self.p['brain'] != 'human' else '  (jen pro bota)')
         if key == 'paddle':
@@ -133,7 +133,7 @@ class Editor:
             self.customs = P.load_custom()
             self.target = next((i + 1 for i, c in enumerate(self.customs) if c['id'] == pid), 0)
             self.a.reload_roster()
-            self.flash(f'Uloženo: {self.p["name"]}. Najdeš ho v "Nový zápas".')
+            self.flash(f'Uloženo: {self.p["name"]}. Najdeš ho v nabídce Nový zápas.')
         elif key == 'delete':
             if self.target == 0:
                 self.flash('Nový hráč ještě není uložený.')
@@ -216,7 +216,7 @@ class Editor:
         a = self.a
         t = a.f_big.render('TVORBA HRÁČE', True, INK)
         s.blit(t, (40, 22))
-        hint = a.f_small.render('šipky vybírají a mění  ·  Enter píše / potvrdí  ·  V poslechne hlas  ·  Esc zpět', True, DIM)
+        hint = a.f_small.render('šipky: výběr a změna  ·  Enter: psát / potvrdit  ·  V: poslechnout hlas  ·  F11: celá obrazovka  ·  Esc: zpět', True, DIM)
         s.blit(hint, (42, 78))
         top, rh, visible = 108, 25, 23
         if self.row < self.scroll:

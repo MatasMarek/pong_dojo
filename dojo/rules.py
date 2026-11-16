@@ -57,16 +57,16 @@ PRESETS = [ORIGINAL, REALISTIC, ARCADE, SLOWMO]
 # (field, label, min, max, step) - what the rules screen lets G change
 SLIDERS = [
     ('ball_speed', 'rychlost míčku', 2.0, 12.0, 0.5),
-    ('speedup', 'zrychlení za úder', 0.0, 1.5, 0.05),
+    ('speedup', 'zrychlení míčku za úder', 0.0, 1.5, 0.05),
     ('max_ball_speed', 'max. rychlost míčku', 4.0, 24.0, 0.5),
     ('paddle_speed', 'rychlost pálky', 2.0, 16.0, 0.5),
-    ('paddle_accel', 'akcelerace pálky', 0.1, 3.0, 0.05),
+    ('paddle_accel', 'zrychlení pálky', 0.1, 3.0, 0.05),
     ('paddle_height', 'výška pálky', 40, 200, 10),
     ('max_angle', 'max. úhel odrazu', 20.0, 75.0, 5.0),
-    ('transfer', 'přenos pohybu pálky', 0.0, 1.0, 0.05),
-    ('spin_from_paddle', 'rotace z pohybu pálky', 0.0, 0.2, 0.01),
-    ('curve', 'zakřivení rotací', 0.0, 3.0, 0.1),
-    ('spin_decay', 'udržení rotace', 0.9, 1.0, 0.005),
+    ('transfer', 'přenos pohybu pálky na míček', 0.0, 1.0, 0.05),
+    ('spin_from_paddle', 'rotace od pohybu pálky', 0.0, 0.2, 0.01),
+    ('curve', 'zakřivení letu rotací', 0.0, 3.0, 0.1),
+    ('spin_decay', 'výdrž rotace', 0.9, 1.0, 0.005),
     ('points', 'body do výhry', 1, 21, 1),
 ]
 

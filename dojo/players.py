@@ -36,7 +36,7 @@ CZ = {'round': 'kulatá', 'square': 'hranatá', 'long': 'protáhlá', 'triangle'
       'ears': 'uši', 'horns': 'rohy', 'spikes': 'bodliny', 'antennae': 'tykadla', 'none': 'nic',
       'stripes': 'pruhy', 'scales': 'šupiny', 'spots': 'skvrny', 'scar': 'jizva'}
 BRAINS = ['human', 'tygr', 'drak']
-BRAIN_CZ = {'human': 'člověk (klávesy)', 'tygr': 'bot - styl TYGR', 'drak': 'bot - styl DRAK'}
+BRAIN_CZ = {'human': 'člověk (klávesy)', 'tygr': 'bot, hraje jako TYGR', 'drak': 'bot, hraje jako DRAK'}
 
 TYGR = dict(tygr.IDENTITY, id='tygr', brain='tygr', skill=10, level='brutální', lines=[],
             avatar={'shape': 'round', 'skin': (255, 140, 26), 'accent': (24, 18, 14), 'eyes': 'angry',

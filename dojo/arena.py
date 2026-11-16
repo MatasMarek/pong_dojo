@@ -42,11 +42,11 @@ DIM = (120, 126, 150)
 HOT = (255, 170, 60)
 
 MENU = [
-    ('quick_bots', 'TYGR  vs  DRAK', 'zápas robotů, hned'),
+    ('quick_bots', 'TYGR  vs  DRAK', 'boti proti sobě, hned'),
     ('quick_tygr', 'TY  vs  TYGR', 'hraješ vlevo: W/S nebo šipky'),
-    ('setup', 'NOVÝ ZÁPAS', 'vyber hráče vlevo a vpravo, i ty svoje'),
+    ('setup', 'NOVÝ ZÁPAS', 'vyber oba hráče (i ty vlastní) a pravidla'),
     ('rules', 'PRAVIDLA', ''),
-    ('editor', 'TVORBA HRÁČE', 'vytvoř a nastyluj vlastního hráče nebo bota'),
+    ('editor', 'TVORBA HRÁČE', 'vytvoř si vlastního hráče nebo bota'),
 ]
 
 
@@ -131,7 +131,12 @@ class Arena:
         pygame.mixer.pre_init(22050, -16, 1, 512)  # must come before pygame.init()
         pygame.init()
         pygame.display.set_caption('PONG DOJO - aréna 2026')
-        self.screen = pygame.display.set_mode((SW, SH))
+        self.settings = load_settings()
+        self.fullscreen = bool(args.fullscreen or self.settings.get('fullscreen'))
+        flags = 0 if args.headless else pygame.SCALED  # SCALED: the game keeps its 980x730 layout at any screen size
+        if self.fullscreen and not args.headless:
+            flags |= pygame.FULLSCREEN
+        self.screen = pygame.display.set_mode((SW, SH), flags)
         pygame.key.set_repeat(280, 45)
         pygame.key.stop_text_input()
         self.clock = pygame.time.Clock()
@@ -334,7 +339,10 @@ class Arena:
                 if e.type == pygame.QUIT:
                     return
                 if self.state == 'editor':
-                    self.editor.on_event(e)
+                    if e.type == pygame.KEYDOWN and e.key == pygame.K_F11:
+                        self.toggle_fullscreen()
+                    else:
+                        self.editor.on_event(e)
                     continue
                 if e.type == pygame.KEYDOWN and not self.on_key(e):
                     return
@@ -348,8 +356,19 @@ class Arena:
             if not self.args.uncapped:
                 self.clock.tick(FPS)
 
+    def toggle_fullscreen(self):
+        if self.args.headless:
+            return
+        pygame.display.toggle_fullscreen()
+        self.fullscreen = not self.fullscreen
+        self.settings['fullscreen'] = self.fullscreen
+        save_settings(self.settings)
+
     def on_key(self, e):
         k = e.key
+        if k == pygame.K_F11 or (k == pygame.K_RETURN and e.mod & pygame.KMOD_ALT):
+            self.toggle_fullscreen()
+            return True
         if k == pygame.K_F12:
             self.save_shot('manual')
             return True
@@ -505,7 +524,7 @@ class Arena:
         if st == 'intro':
             self.draw_intro()
         elif st == 'paused':
-            self.banner('PAUZA', 'P nebo mezerník pokračuje')
+            self.banner('PAUZA', 'pokračuj klávesou P nebo mezerníkem')
         elif st == 'over':
             self.draw_over()
         if self.taunt and st in ('goal', 'over'):
@@ -603,12 +622,12 @@ class Arena:
                    f'pálka max {r.paddle_speed:g} px/tik  ·  do {r.points}')
         rules = self.f_small.render(txt, True, DIM)
         s.blit(rules, rules.get_rect(center=(SW // 2, y)))
-        keys = 'P pauza  ·  M zvuk  ·  F12 snímek  ·  Esc menu'
+        keys = 'P pauza  ·  M zvuk  ·  F11 celá obrazovka  ·  F12 snímek  ·  Esc menu'
         if self.mode == 'bots':
             keys = f'rychlost ×{self.speed} (+ / -)  ·  ' + keys
         k = self.f_small.render(keys, True, (90, 96, 124))
         s.blit(k, k.get_rect(center=(SW // 2, y + 24)))
-        credit = self.f_small.render('originál: Marek Matas & co. (2022)  ·  aréna, boti, realistická fyzika: 2026', True, (70, 74, 100))
+        credit = self.f_small.render('originál: Marek Matas a spol. (2022)  ·  aréna, boti a realistická fyzika: 2026', True, (70, 74, 100))
         s.blit(credit, credit.get_rect(center=(SW // 2, SH - 14)))
 
     def banner(self, big, small, color=INK):
@@ -706,7 +725,7 @@ class Arena:
         now = time.time()
         t = self.f_huge.render('PONG DOJO', True, INK)
         s.blit(t, t.get_rect(center=(SW // 2, 100)))
-        u = self.f_txt.render('aréna 2026  ·  na dojo Marka Matase & spol. z roku 2022', True, DIM)
+        u = self.f_txt.render('aréna 2026  ·  podle hry Marka Matase a spol. z roku 2022', True, DIM)
         s.blit(u, u.get_rect(center=(SW // 2, 158)))
         for i, (item, label, sub) in enumerate(MENU):
             r = pygame.Rect(SW // 2 - 250, 200 + i * 82, 500, 68)
@@ -717,7 +736,7 @@ class Arena:
             s.blit(self.f_mid.render(str(i + 1), True, col), (r.x + 22, r.y + 18))
             s.blit(self.f_mid.render(label, True, INK), (r.x + 64, r.y + 8))
             if item == 'rules':
-                sub = f'teď: {self.rules.name}' + ('  (zamčeno, fyzika z roku 2022)' if self.rules.locked else '  (realistický engine)')
+                sub = f'teď: {self.rules.name}' + ('  (zamčená, původní fyzika z roku 2022)' if self.rules.locked else '  (realistická fyzika)')
             s.blit(self.f_small.render(sub, True, DIM), (r.x + 64, r.y + 42))
         for i, pid in enumerate(('tygr', 'drak')):
             p = next(x for x in self.roster if x['id'] == pid)
@@ -727,7 +746,7 @@ class Arena:
             s.blit(nm, nm.get_rect(center=(cx, 430)))
             tl = self.f_small.render(p['title'], True, DIM)
             s.blit(tl, tl.get_rect(center=(cx, 458)))
-        k = self.f_small.render('1–5 nebo šipky + Enter  ·  Esc konec', True, DIM)
+        k = self.f_small.render('1–5 nebo šipky + Enter  ·  F11 celá obrazovka  ·  Esc konec', True, DIM)
         s.blit(k, k.get_rect(center=(SW // 2, SH - 30)))
 
     def draw_setup(self):
@@ -801,14 +820,14 @@ class Arena:
                 s.blit(self.f_txt.render(f'{v:g}', True, INK), (r.x + 560, y + 6))
             y += 38 if row != 'preset' else 46
         if self.rules.locked:
-            info = ['Originál 2022 je hra Marka Matase přesně tak, jak byla:',
-                    'míček 5 px/tik, pálka 2 px/tik bez setrvačnosti, rotace podle klávesy drženej při úderu,',
-                    'hřiště 700×500, do 10. Zamčeno a ověřeno testem tests/test_physics_unchanged.py.',
-                    'Šipkou vlevo/vpravo na "sada pravidel" přepneš na realistický engine s posuvníky.']
+            info = ['Originál 2022 je hra Marka Matase přesně tak, jak ji napsal:',
+                    'míček 5 px za tik, pálka 2 px za tik bez setrvačnosti, rotaci dává klávesa držená při úderu,',
+                    'hřiště 700 × 500, hraje se do 10. Pravidla jsou zamčená a hlídá je test.',
+                    'Šipkou vlevo nebo vpravo přepneš na realistickou fyziku s posuvníky.']
             for j, ln in enumerate(info):
                 u = self.f_txt.render(ln, True, DIM)
                 s.blit(u, u.get_rect(center=(SW // 2, 260 + 30 * j)))
-        k = self.f_small.render('nahoru/dolů vybírá  ·  vlevo/vpravo mění  ·  změna posuvníku = sada "Vlastní"  ·  Esc / Hotovo uloží',
+        k = self.f_small.render('nahoru/dolů vybírá  ·  vlevo/vpravo mění  ·  pohnutím posuvníku vznikne sada Vlastní  ·  Esc nebo Hotovo uloží',
                                 True, DIM)
         s.blit(k, k.get_rect(center=(SW // 2, SH - 24)))
 
@@ -843,8 +862,30 @@ class Arena:
             self.record_n += 1
 
 
+SETTINGS = os.path.join(os.path.dirname(REPO), 'arena.json')  # per-PC settings, outside the repo
+
+
+def load_settings():
+    try:
+        import json
+        with open(SETTINGS, encoding='utf-8') as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return {}
+
+
+def save_settings(d):
+    try:
+        import json
+        with open(SETTINGS, 'w', encoding='utf-8') as fh:
+            json.dump(d, fh)
+    except OSError:
+        pass
+
+
 def main():
     ap = argparse.ArgumentParser(description='PONG DOJO arena')
+    ap.add_argument('--fullscreen', action='store_true', help='start in fullscreen (F11 toggles)')
     ap.add_argument('--mode', choices=['bots', 'tygr', 'drak', 'duel'], help='skip the menu')
     ap.add_argument('--rules', help='preset name (Originál, Realistický, Arkáda, Zpomalený)')
     ap.add_argument('--speed', type=int, default=1, help='ticks per frame in a bot match')

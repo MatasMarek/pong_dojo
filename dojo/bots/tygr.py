@@ -11,7 +11,7 @@ from dojo.bots.common import Planner, margin, CENTER
 
 IDENTITY = {
     'name': 'TYGR',
-    'title': 'the Ultimate',
+    'title': 'Neporazitelný',
     'motto': 'Útok je nejlepší obrana.',
     'primary': (255, 140, 26),     # tiger orange
     'secondary': (24, 18, 14),     # stripe black

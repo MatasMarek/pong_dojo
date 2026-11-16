@@ -15,7 +15,7 @@ from config import PADDLE_HEIGHT
 
 IDENTITY = {
     'name': 'DRAK',
-    'title': 'the Nemesis',
+    'title': 'Úhlavní nepřítel',
     'motto': 'Vidím tvůj úder dřív, než ho zahraješ.',
     'primary': (40, 214, 160),     # jade
     'secondary': (8, 44, 40),      # deep sea

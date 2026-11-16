@@ -27,7 +27,8 @@ PS_SCRIPT = r'''
 param([string]$job)
 Add-Type -AssemblyName System.Speech
 $s = New-Object System.Speech.Synthesis.SpeechSynthesizer
-try { $s.SelectVoice('%s') } catch { }
+try { $s.SelectVoice('%s') } catch { Write-Error 'Czech voice not available'; exit 3 }
+if ($s.Voice.Culture.Name -ne 'cs-CZ') { Write-Error ('wrong voice: ' + $s.Voice.Name); exit 3 }
 $s.Rate = 3
 $s.Volume = 100
 $fmt = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo(%d, [System.Speech.AudioFormat.AudioBitsPerSample]::Sixteen, [System.Speech.AudioFormat.AudioChannel]::Mono)
@@ -42,8 +43,13 @@ foreach ($it in $items) {
 ''' % (VOICE_NAME, RATE)
 
 
+def shell():
+    import shutil
+    return shutil.which('pwsh') or r'C:\Program Files\PowerShell\7\pwsh.exe'
+
+
 def key(text):
-    return hashlib.sha1((text + '|rate3').encode('utf-8')).hexdigest()[:16]
+    return hashlib.sha1((text + '|rate3|cs-CZ').encode('utf-8')).hexdigest()[:16]
 
 
 def wav_path(text):
@@ -60,6 +66,7 @@ class Voice:
         self.pending = set()
         self.lock = threading.Lock()
         self.channel = None
+        self.last_error = ''
 
     # --- rendering --------------------------------------------------------------------
     def prepare(self, lines, profiles=()):
@@ -80,11 +87,14 @@ class Voice:
             with open(job, 'w', encoding='utf-8') as fh:
                 json.dump([{'text': t, 'path': wav_path(t)} for t in todo], fh, ensure_ascii=False)
             try:
-                subprocess.run(['powershell', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
-                                '-File', script, job], capture_output=True, timeout=600,
-                               creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-            except (OSError, subprocess.SubprocessError):
-                pass
+                # PowerShell 7 (pwsh) sees Windows' Czech voice; Windows PowerShell 5.1 does not
+                # (it only sees the English desktop voices), so it is not used as a fallback.
+                r = subprocess.run([shell(), '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+                                    '-File', script, job], capture_output=True, timeout=600,
+                                   creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+                self.last_error = r.stderr.decode('utf-8', 'replace').strip()[:300] if r.returncode else ''
+            except (OSError, subprocess.SubprocessError) as exc:
+                self.last_error = str(exc)
             finally:
                 try:
                     os.remove(job)

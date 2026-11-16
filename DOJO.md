@@ -45,7 +45,10 @@ From the folder above this one: `play.cmd` (double-click), or `play.cmd --mode b
 By hand, inside this folder: `python -m dojo.arena` (needs pygame or pygame-ce).
 
 Menu: 1 TYGR vs DRAK · 2 you vs TYGR · 3 new match (any two players, any rules) · 4 rules · 5 player creator.
-Keys: P pause · +/- speed in a bot match · M sound · F12 screenshot · Esc menu.
+Keys: P pause · +/- speed in a bot match · M sound · F11 (or Alt+Enter) fullscreen, remembered · F12 screenshot · Esc menu.
+
+The voices need PowerShell 7 (`pwsh`): only it sees Windows' Czech voice, Microsoft Jakub. Windows PowerShell 5.1
+sees just the English voices; the renderer refuses to use them, and the taunt then shows without sound.
 
 ## What stayed the same
 
