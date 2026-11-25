@@ -1,0 +1,16 @@
+{
+ "name": "Originál 2022",
+ "engine": "original",
+ "ball_speed": 5.0,
+ "speedup": 0.25,
+ "max_ball_speed": 11.0,
+ "paddle_speed": 6.0,
+ "paddle_accel": 0.6,
+ "paddle_height": 100,
+ "max_angle": 55.0,
+ "transfer": 0.35,
+ "spin_from_paddle": 0.06,
+ "curve": 0.9,
+ "spin_decay": 0.985,
+ "points": 10
+}

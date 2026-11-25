@@ -10,6 +10,7 @@ import os
 from dataclasses import dataclass, asdict, field, replace
 
 from config import HEIGHT, PADDLE_HEIGHT, WINNING_SCORE
+from dojo import paths
 
 
 @dataclass
@@ -70,7 +71,7 @@ SLIDERS = [
     ('points', 'body do výhry', 1, 21, 1),
 ]
 
-STORE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'rules.json')
+STORE = paths.RULES_FILE  # the rules used last; a fresh clone falls back to paths.RULES_DEFAULT
 
 
 def custom_from(base, **changes):
@@ -82,11 +83,13 @@ def custom_from(base, **changes):
 
 
 def load_last():
-    try:
-        with open(STORE, encoding='utf-8') as fh:
-            return Rules.from_json(json.load(fh))
-    except (OSError, ValueError, TypeError):
-        return ORIGINAL
+    for path in (STORE, paths.RULES_DEFAULT):
+        try:
+            with open(path, encoding='utf-8') as fh:
+                return Rules.from_json(json.load(fh))
+        except (OSError, ValueError, TypeError):
+            continue
+    return ORIGINAL
 
 
 def save_last(rules):

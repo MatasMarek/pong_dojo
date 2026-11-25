@@ -1,7 +1,9 @@
 """Avatar voices: Windows' built-in Czech voice (Microsoft Jakub), offline.
 
 1. render: one PowerShell process (System.Speech) speaks a batch of lines into WAV
-   files in PONG DOJO/.voice_cache (outside the friend's repo), in a background thread.
+   files in .voice_cache/ (see dojo/paths.py), in a background thread. The repository
+   ships the cache pre-rendered, so the stock lines play on any system; new lines (own
+   taunts) need Windows with PowerShell 7 and the Czech voice, elsewhere they stay silent.
 2. shape: each avatar's voice profile reshapes the WAV in pure Python - pitch, growl
    (overdrive + rumble), echo, robot (ring modulation) - and boosts it into a shout.
 3. play: returns the sound's length and a mouth envelope (loudness per 1/30 s), so the
@@ -19,7 +21,9 @@ import wave
 
 import pygame
 
-CACHE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), '.voice_cache')
+from dojo import paths
+
+CACHE = paths.VOICE_CACHE
 RATE = 22050
 VOICE_NAME = 'Microsoft Jakub'
 

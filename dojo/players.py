@@ -1,6 +1,6 @@
 """Players: the built-in four and the ones G creates in the editor.
 
-A player is a plain dict (saved as JSON in PONG DOJO/players/, outside the friend's repo):
+A player is a plain dict (saved as JSON in players/, see dojo/paths.py):
 name, title, motto, colours, paddle pattern, avatar face, voice, taunt level, own lines,
 and a brain: 'human', 'tygr' or 'drak' (+ skill 1-10 for a created bot).
 """
@@ -9,12 +9,13 @@ import os
 import re
 import random
 
+from dojo import paths
 from dojo.bots import tygr, drak
 
 DOJO = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(DOJO)
 TAUNTS = os.path.join(DOJO, 'taunts')
-PLAYERS_DIR = os.path.join(os.path.dirname(REPO), 'players')
+PLAYERS_DIR = paths.PLAYERS_DIR
 
 LEVELS = ['slušné', 'drsné', 'brutální']
 LEVEL_FILE = {'slušné': '', 'drsné': '_drsne', 'brutální': '_brutalni'}

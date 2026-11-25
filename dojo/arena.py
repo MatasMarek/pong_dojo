@@ -28,9 +28,10 @@ from dojo import rules as R
 from dojo import players as P
 from dojo.looks import paddle_skin, draw_avatar, mix
 from dojo.voice import Voice
+from dojo import paths
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SHOTS_DIR = os.path.join(os.path.dirname(REPO), 'shots')
+REPO = paths.REPO
+SHOTS_DIR = paths.SHOTS_DIR
 
 SW, SH = 980, 730
 FX, FY = (SW - FW) // 2, 150
@@ -862,7 +863,7 @@ class Arena:
             self.record_n += 1
 
 
-SETTINGS = os.path.join(os.path.dirname(REPO), 'arena.json')  # per-PC settings, outside the repo
+SETTINGS = paths.SETTINGS  # per-PC settings (fullscreen), kept out of git
 
 
 def load_settings():
